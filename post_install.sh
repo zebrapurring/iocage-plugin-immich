@@ -128,7 +128,7 @@ sysrc immich_dir="$IMMICH_INSTALL_DIR"
 # Start services
 service postgresql start
 service redis start
-service immich start || cat /var/log/daemon.log
+#service immich start
 
 # Clean up
 npm cache clean --force
