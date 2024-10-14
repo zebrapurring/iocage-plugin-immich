@@ -4,6 +4,7 @@ set -eux
 
 IMMICH_REPO_DIR="/usr/local/src/immich"
 IMMICH_INSTALL_DIR="/usr/local/share/immich"
+IMMICH_MEDIA_DIR="/mnt/media"
 IMMICH_REPO_URL="https://github.com/immich-app/immich"
 IMMICH_VERSION_TAG="v1.117.0"
 POSTGRES_PASSWORD="$(dd if=/dev/urandom bs=1 count=100 status=none | md5 -q)"
@@ -84,6 +85,10 @@ chmod 444 "$IMMICH_INSTALL_DIR/build/geodata"/*
 # Generate empty build lockfile
 echo "{}" > "$IMMICH_INSTALL_DIR/build/build-lock.json"
 
+# Create the media directory
+mkdir -p "$IMMICH_MEDIA_DIR"
+chown immich:immich "$IMMICH_MEDIA_DIR"
+
 # Configure Immich environment variables
 cat > "$IMMICH_INSTALL_DIR/.env" << EOF
 IMMICH_BUILD=""
@@ -98,7 +103,7 @@ IMMICH_SOURCE_URL=""
 
 NO_COLOR=true
 IMMICH_ENV="production"
-IMMICH_MEDIA_LOCATION="/mnt/media"
+IMMICH_MEDIA_LOCATION="$IMMICH_MEDIA_DIR"
 IMMICH_BUILD_DATA="$IMMICH_INSTALL_DIR/build"
 
 DB_HOSTNAME="localhost"
