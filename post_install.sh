@@ -128,3 +128,4 @@ service immich start
 # Clean up
 npm cache clean --force
 rm -r "$IMMICH_REPO_DIR"
+pkg clean --all
