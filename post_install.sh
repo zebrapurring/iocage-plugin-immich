@@ -19,7 +19,7 @@ service postgresql onestop
 
 # Create immich user
 pw groupadd immich -g 372
-pw useradd immich -u 372 -g 372 -c "Immich Server Daemon" -m -s /usr/sbin/nologin
+pw useradd immich -u 372 -g 372 -c "Immich Server Daemon" -d /nonexistent -s /usr/sbin/nologin
 
 # Initialise the Immich repository
 if [ ! -d "$IMMICH_REPO_DIR" ]; then
@@ -121,8 +121,8 @@ service syslogd restart
 # Enable system services
 sysrc postgresql_enable="YES"
 sysrc redis_enable="YES"
-sysrc immich_enable="YES"
-sysrc immich_dir="$IMMICH_INSTALL_DIR"
+sysrc immich_server_enable="YES"
+sysrc immich_server_dir="$IMMICH_INSTALL_DIR"
 
 # Start services
 service postgresql start
