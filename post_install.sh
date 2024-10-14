@@ -68,6 +68,7 @@ npm --prefix "$IMMICH_INSTALL_DIR/staging/web" install
 npm --prefix "$IMMICH_INSTALL_DIR/staging/web" install --cpu=wasm32 sharp
 npm --prefix "$IMMICH_INSTALL_DIR/staging/web" run build
 npm --prefix "$IMMICH_INSTALL_DIR/staging/web" prune --omit=dev --omit=optional
+mkdir "$IMMICH_INSTALL_DIR/build"
 mv "$IMMICH_INSTALL_DIR/staging/web/build" "$IMMICH_INSTALL_DIR/build/www"
 
 # Populate geodata
