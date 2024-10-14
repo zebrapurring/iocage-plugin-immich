@@ -23,9 +23,8 @@ pw useradd immich -u 372 -g 372 -c "Immich Server Daemon" -m -s /usr/sbin/nologi
 
 # Initialise the Immich repository
 if [ ! -d "$IMMICH_REPO_DIR" ]; then
-    git clone "$IMMICH_REPO_URL" "$IMMICH_REPO_DIR"
+    git clone --branch "$IMMICH_VERSION_TAG" "$IMMICH_REPO_URL" "$IMMICH_REPO_DIR"
 fi
-git -C "$IMMICH_REPO_DIR" checkout "$IMMICH_VERSION_TAG"
 rm -rf "$IMMICH_INSTALL_DIR"
 mkdir -p "$IMMICH_INSTALL_DIR"
 
