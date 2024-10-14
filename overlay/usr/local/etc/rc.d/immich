@@ -1,0 +1,29 @@
+#!/bin/sh
+#
+# $FreeBSD$
+#
+# PROVIDE: immich
+# REQUIRE: NETWORKING DAEMON postgres redis
+# KEYWORD: shutdown
+#
+
+. /etc/rc.subr
+name="immich"
+rcvar="${name}_enable"
+
+immich_user="immich"
+immich_dir="${immich_dir:-"/usr/local/share/immich"}"
+immich_chdir="${immich_dir}"
+immich_env_file="${immich_dir}/.env"
+immich_env="NODE_ENV=production"
+pidfile="/var/run/${name}.pid"
+procname="/usr/local/bin/node"
+
+node="/usr/local/bin/node"
+node_arg="dist/main"
+
+command="/usr/sbin/daemon"
+command_args=" -S -l daemon -s debug -T ${name} -p ${pidfile} -u ${immich_user} ${node} ${node_arg}"
+
+load_rc_config "${name}"
+run_rc_command "${1}"
