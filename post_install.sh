@@ -34,7 +34,6 @@ cd "$IMMICH_INSTALL_DIR"
 npm ci
 npm install --cpu=wasm32 sharp
 npm run build
-npm prune --omit=dev --omit=optional
 npm link && npm install -g @immich/cli
 
 # Build web frontend
