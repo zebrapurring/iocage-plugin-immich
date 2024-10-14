@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -eu
+set -eux
 
 IMMICH_REPO_DIR="/usr/local/src/immich"
 IMMICH_INSTALL_DIR="/usr/local/share/immich"
