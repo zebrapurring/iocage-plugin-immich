@@ -23,7 +23,7 @@ node="/usr/local/bin/node"
 node_arg="dist/main"
 
 command="/usr/sbin/daemon"
-command_args=" -S -l daemon -s debug -T ${name} -p ${pidfile} -u ${immich_user} ${node} ${node_arg}"
+command_args=" -S -l daemon -s debug -T ${name} -p ${pidfile} ${node} ${node_arg}"
 
 load_rc_config "${name}"
 run_rc_command "${1}"
