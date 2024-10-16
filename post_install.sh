@@ -7,7 +7,7 @@ IMMICH_INSTALL_DIR="/usr/local/share/immich"
 IMMICH_SETTINGS_DIR="/usr/local/etc/immich"
 IMMICH_MEDIA_DIR="/mnt/media"
 IMMICH_REPO_URL="https://github.com/immich-app/immich"
-IMMICH_VERSION_TAG="v1.117.0"
+IMMICH_VERSION_TAG="v1.118.0"
 POSTGRES_PASSWORD="$(dd if=/dev/urandom bs=1 count=100 status=none | md5 -q)"
 
 # Configure PostgreSQL
@@ -100,6 +100,9 @@ IMMICH_REPOSITORY_URL="$(git -C "$IMMICH_REPO_DIR" remote get-url origin)"
 IMMICH_SOURCE_REF=""
 IMMICH_SOURCE_COMMIT="$(git -C "$IMMICH_REPO_DIR" rev-parse HEAD)"
 IMMICH_SOURCE_URL=""
+
+IMMICH_HOST="0.0.0.0"
+IMMICH_PORT="2283"
 
 NO_COLOR=true
 IMMICH_ENV="production"
