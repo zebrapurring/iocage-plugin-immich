@@ -11,6 +11,7 @@
     "ffmpeg",
     "git",
     "ImageMagick7",
+    "libde265",
     "node",
     "npm",
     "p5-Image-ExifTool",

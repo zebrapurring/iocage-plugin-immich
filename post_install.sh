@@ -32,7 +32,8 @@ mkdir -p "$IMMICH_INSTALL_DIR"
 # Build server backend
 cp -R "$IMMICH_REPO_DIR/server"/* "$IMMICH_INSTALL_DIR"
 cd "$IMMICH_INSTALL_DIR"
-npm ci
+npm install --save node-addon-api node-gyp
+npm ci --foreground-scripts
 npm install --cpu=wasm32 sharp
 npm run build
 npm link && npm install -g @immich/cli
@@ -64,7 +65,7 @@ index f4ba5e6c9..5b0104e9b 100644
    }
 EOF
 rm "$IMMICH_INSTALL_DIR/staging/web/package-lock.json"
-npm --prefix "$IMMICH_INSTALL_DIR/staging/web" install
+npm --prefix "$IMMICH_INSTALL_DIR/staging/web" install  --foreground-scripts
 npm --prefix "$IMMICH_INSTALL_DIR/staging/web" install --cpu=wasm32 sharp
 npm --prefix "$IMMICH_INSTALL_DIR/staging/web" run build
 npm --prefix "$IMMICH_INSTALL_DIR/staging/web" prune --omit=dev --omit=optional
