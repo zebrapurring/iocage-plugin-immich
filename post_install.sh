@@ -119,10 +119,6 @@ DB_VECTOR_EXTENSION="pgvector"
 REDIS_HOSTNAME="localhost"
 EOF
 
-# Modify Syslogd configuration to include debug levels
-sed -i "" "s/daemon\.info/daemon.*/" /etc/syslog.conf
-service syslogd restart
-
 # Enable system services
 sysrc postgresql_enable="YES"
 sysrc redis_enable="YES"
