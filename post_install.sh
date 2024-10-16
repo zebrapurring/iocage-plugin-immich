@@ -4,6 +4,7 @@ set -eux
 
 IMMICH_REPO_DIR="/usr/local/src/immich"
 IMMICH_INSTALL_DIR="/usr/local/share/immich"
+IMMICH_SETTINGS_DIR="/usr/local/etc/immich"
 IMMICH_MEDIA_DIR="/mnt/media"
 IMMICH_REPO_URL="https://github.com/immich-app/immich"
 IMMICH_VERSION_TAG="v1.117.0"
@@ -88,7 +89,8 @@ mkdir -p "$IMMICH_MEDIA_DIR"
 chown immich:immich "$IMMICH_MEDIA_DIR"
 
 # Configure Immich environment variables
-cat > "$IMMICH_INSTALL_DIR/.env" << EOF
+mkdir -p "$IMMICH_SETTINGS_DIR"
+cat > "$IMMICH_SETTINGS_DIR/immich_server.env" << EOF
 IMMICH_BUILD=""
 IMMICH_BUILD_URL=""
 IMMICH_BUILD_IMAGE=""
