@@ -132,5 +132,6 @@ service immich_server start
 
 # Clean up
 npm cache clean --force
-rm -r "$IMMICH_REPO_DIR"
 pkg clean --all --yes
+rm -r "$IMMICH_REPO_DIR"
+rm -rf "$IMMICH_INSTALL_DIR/staging"
