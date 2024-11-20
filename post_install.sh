@@ -7,7 +7,7 @@ IMMICH_INSTALL_DIR="/usr/local/share/immich"
 IMMICH_SETTINGS_DIR="/usr/local/etc/immich"
 IMMICH_MEDIA_DIR="/var/db/immich-media"
 IMMICH_REPO_URL="https://github.com/immich-app/immich"
-IMMICH_VERSION_TAG="v1.118.0"
+IMMICH_VERSION_TAG="v1.121.0"
 POSTGRES_PASSWORD="$(dd if=/dev/urandom bs=1 count=100 status=none | md5 -q)"
 
 # Configure PostgreSQL
@@ -41,6 +41,7 @@ npm link && npm install -g @immich/cli
 # Build web frontend
 mkdir -p "$IMMICH_INSTALL_DIR/staging/open-api"
 cp -R "$IMMICH_REPO_DIR/open-api/typescript-sdk" "$IMMICH_INSTALL_DIR/staging/open-api/"
+cp -R "$IMMICH_REPO_DIR/i18n" "$IMMICH_INSTALL_DIR/staging/"
 npm --prefix "$IMMICH_INSTALL_DIR/staging/open-api/typescript-sdk" ci
 npm --prefix "$IMMICH_INSTALL_DIR/staging/open-api/typescript-sdk" run build
 npm --prefix "$IMMICH_INSTALL_DIR/staging/open-api/typescript-sdk" prune --omit=dev --omit=optional
