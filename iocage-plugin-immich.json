@@ -18,6 +18,7 @@
     "postgresql16-contrib",
     "postgresql16-pgvector",
     "postgresql16-server",
+    "python311",
     "redis",
     "vips"
   ],

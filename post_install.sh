@@ -9,6 +9,7 @@ IMMICH_MEDIA_DIR="/var/db/immich-media"
 IMMICH_REPO_URL="https://github.com/immich-app/immich"
 IMMICH_VERSION_TAG="v1.122.0"
 POSTGRES_PASSWORD="$(dd if=/dev/urandom bs=1 count=100 status=none | md5 -q)"
+export PYTHON="python3.11"
 
 # Configure PostgreSQL
 /usr/local/etc/rc.d/postgresql oneinitdb
@@ -66,7 +67,7 @@ index f4ba5e6c9..5b0104e9b 100644
    }
 EOF
 rm "$IMMICH_INSTALL_DIR/staging/web/package-lock.json"
-npm --prefix "$IMMICH_INSTALL_DIR/staging/web" install  --foreground-scripts
+npm --prefix "$IMMICH_INSTALL_DIR/staging/web" install --foreground-scripts
 npm --prefix "$IMMICH_INSTALL_DIR/staging/web" install --cpu=wasm32 sharp
 npm --prefix "$IMMICH_INSTALL_DIR/staging/web" run build
 npm --prefix "$IMMICH_INSTALL_DIR/staging/web" prune --omit=dev --omit=optional
