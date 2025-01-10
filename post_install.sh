@@ -7,7 +7,7 @@ IMMICH_INSTALL_DIR="/usr/local/share/immich"
 IMMICH_SETTINGS_DIR="/usr/local/etc/immich"
 IMMICH_MEDIA_DIR="/var/db/immich-media"
 IMMICH_REPO_URL="https://github.com/immich-app/immich"
-IMMICH_VERSION_TAG="v1.122.0"
+IMMICH_VERSION_TAG="v1.124.2"   # TODO: requires at least 1f0ffd634ae5e018129ffd5cac4de1591ca52b0e
 POSTGRES_PASSWORD="$(dd if=/dev/urandom bs=1 count=100 status=none | md5 -q)"
 export PYTHON="python3.11"
 
@@ -47,27 +47,7 @@ npm --prefix "$IMMICH_INSTALL_DIR/staging/open-api/typescript-sdk" ci
 npm --prefix "$IMMICH_INSTALL_DIR/staging/open-api/typescript-sdk" run build
 npm --prefix "$IMMICH_INSTALL_DIR/staging/open-api/typescript-sdk" prune --omit=dev --omit=optional
 cp -R "$IMMICH_REPO_DIR/web" "$IMMICH_INSTALL_DIR/staging/"
-patch -p1 "$IMMICH_INSTALL_DIR/staging/web/package.json" << EOF
-diff --git a/web/package.json b/web/package.json
-index f4ba5e6c9..5b0104e9b 100644
---- a/web/package.json
-+++ b/web/package.json
-@@ -86,6 +86,12 @@
-     "svelte-maplibre": "^0.9.13",
-     "thumbhash": "^0.1.1"
-   },
-+  "overrides": {
-+    "@sveltejs/kit": {
-+      "rollup": "npm:@rollup/wasm-node@latest"
-+    },
-+    "rollup": "npm:@rollup/wasm-node@latest"
-+  },
-   "volta": {
-     "node": "20.17.0"
-   }
-EOF
-rm "$IMMICH_INSTALL_DIR/staging/web/package-lock.json"
-npm --prefix "$IMMICH_INSTALL_DIR/staging/web" install --foreground-scripts
+npm --prefix "$IMMICH_INSTALL_DIR/staging/web" ci
 npm --prefix "$IMMICH_INSTALL_DIR/staging/web" install --cpu=wasm32 sharp
 npm --prefix "$IMMICH_INSTALL_DIR/staging/web" run build
 npm --prefix "$IMMICH_INSTALL_DIR/staging/web" prune --omit=dev --omit=optional
