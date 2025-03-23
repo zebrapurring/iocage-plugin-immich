@@ -9,6 +9,7 @@ IMMICH_MEDIA_DIR="/var/db/immich-media"
 IMMICH_REPO_URL="https://github.com/immich-app/immich"
 IMMICH_VERSION_TAG="v1.129.0"
 POSTGRES_PASSWORD="$(dd if=/dev/urandom bs=1 count=100 status=none | md5 -q)"
+FFMPEG_VERSION="7.0.2-7"    # Taken from https://github.com/immich-app/base-images/blob/main/server/bin/build-lock.json
 export PYTHON="python3.11"
 
 # Configure PostgreSQL
@@ -18,6 +19,17 @@ echo "$POSTGRES_PASSWORD" | pw usermod postgres -h 0
 su - postgres -c "createdb immich -O postgres"
 echo "shared_preload_libraries = '/usr/local/lib/postgresql/vector.so'" >> /var/db/postgres/data16/postgresql.conf
 service postgresql onestop
+
+# Install custom ffmpeg
+ffmpeg_staging_dir="$(mktemp -d -t jellyfin-ffmpeg)"
+git clone https://github.com/jellyfin/jellyfin-ffmpeg "$ffmpeg_staging_dir"
+cd "$ffmpeg_staging_dir"
+git checkout "$FFMPEG_VERSION"
+./configure
+gmake --jobs "$(nproc)"
+gmake install
+cd -
+rm -rf "$ffmpeg_staging_dir"
 
 # Create immich user
 pw groupadd immich -g 372

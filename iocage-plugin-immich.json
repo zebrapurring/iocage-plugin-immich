@@ -8,8 +8,9 @@
   },
   "pkgs": [
     "bash",
-    "ffmpeg",
+    "gcc",
     "git",
+    "gmake",
     "ImageMagick7",
     "libde265",
     "node",
