@@ -25,7 +25,50 @@ ffmpeg_staging_dir="$(mktemp -d -t jellyfin-ffmpeg)"
 git clone https://github.com/jellyfin/jellyfin-ffmpeg "$ffmpeg_staging_dir"
 cd "$ffmpeg_staging_dir"
 git checkout "$FFMPEG_VERSION"
-./configure
+ln -s debian/patches patches
+quilt push -a
+./configure \
+    --cc="clang" \
+    --extra-cflags="-I/usr/local/include" \
+    --extra-ldflags="-L/usr/local/lib" \
+    --extra-version="Jellyfin" \
+    --disable-doc \
+    --disable-ffplay \
+    --disable-libxcb \
+    --disable-ptx-compression \
+    --disable-sdl2 \
+    --disable-static \
+    --disable-xlib \
+    --enable-chromaprint \
+    --enable-gmp \
+    --enable-gnutls \
+    --enable-gpl \
+    --enable-libass \
+    --enable-libdav1d \
+    --enable-libdrm \
+    --enable-libfdk-aac \
+    --enable-libfontconfig \
+    --enable-libfreetype \
+    --enable-libfribidi \
+    --enable-libharfbuzz \
+    --enable-libopenmpt \
+    --enable-libopus \
+    --enable-libsvtav1 \
+    --enable-libvorbis \
+    --enable-libvpx \
+    --enable-libwebp \
+    --enable-libx264 \
+    --enable-libx265 \
+    --enable-libxml2 \
+    --enable-libzimg \
+    --enable-libzvbi \
+    --enable-lto="auto" \
+    --enable-nonfree \
+    --enable-opencl \
+    --enable-shared \
+    --enable-vaapi \
+    --enable-version3 \
+    --toolchain="hardened"
 gmake --jobs "$(nproc)"
 gmake install
 cd -
