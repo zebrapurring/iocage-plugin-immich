@@ -25,14 +25,14 @@ mkdir -p "$IMMICH_INSTALL_DIR"
 cp -R "$IMMICH_REPO_DIR/server"/* "$IMMICH_INSTALL_DIR"
 cd "$IMMICH_INSTALL_DIR"
 npm ci
+# Build sharp from source to enable HEIC support
 # WA: fix error `Override for sharp@^0.34.0 conflicts with direct dependency`
 jq 'del(.overrides.sharp)' package.json > package.json.patched && mv package.json.patched package.json
-npm install --cpu=wasm32 "sharp@$(jq -r '.dependencies.sharp' package.json | tr -d '^')"
+sharp_version="$(jq -r '.dependencies.sharp' package.json | tr -d '^')"
+npm install --save node-addon-api node-gyp
+npm install --cpu=wasm32 --foreground-scripts --build-from-source "sharp@$sharp_version"
 npm run build
 npm link && npm install -g @immich/cli
-# Fix for supporting HEIC format
-npm install --save node-addon-api node-gyp
-npm rebuild --foreground-scripts sharp
 
 # Build web frontend
 mkdir -p "$IMMICH_INSTALL_DIR/staging/open-api"
