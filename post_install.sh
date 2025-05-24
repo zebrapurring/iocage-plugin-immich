@@ -7,24 +7,37 @@ IMMICH_INSTALL_DIR="/usr/local/share/immich"
 IMMICH_SETTINGS_DIR="/usr/local/etc/immich"
 IMMICH_MEDIA_DIR="/var/db/immich-media"
 IMMICH_REPO_URL="https://github.com/immich-app/immich"
-IMMICH_VERSION_TAG="v1.129.0"
+IMMICH_VERSION_TAG="v1.133.1"
 POSTGRES_PASSWORD="$(dd if=/dev/urandom bs=1 count=100 status=none | md5 -q)"
-FFMPEG_VERSION="7.0.2-7"    # Taken from https://github.com/immich-app/base-images/blob/main/server/bin/build-lock.json
+VECTORCHORD_VERSION="0.3.0"
+FFMPEG_VERSION="v7.1.1-3"    # Taken from https://github.com/immich-app/base-images/blob/main/server/packages/ffmpeg.json
 export PYTHON="python3.11"
+
+# Install VectorChord
+rustup-init --profile minimal --default-toolchain none -y
+export PATH="$HOME/.cargo/bin:$PATH"
+vectorchord_staging_dir="$(mktemp -d -t vectorchord)"
+git clone --branch "$VECTORCHORD_VERSION" https://github.com/tensorchord/VectorChord "$vectorchord_staging_dir"
+cd "$vectorchord_staging_dir"
+cargo install cargo-pgrx@"$(sed -n 's/.*pgrx = { version = "\(=.*\)",.*/\1/p' Cargo.toml)" --locked
+cargo pgrx init --pg16="$(which pg_config)"
+cargo pgrx install --release
+cp -a ./sql/upgrade/. "$(pg_config --sharedir)/extension"
+cd -
+rm -rf "$vectorchord_staging_dir"
 
 # Configure PostgreSQL
 /usr/local/etc/rc.d/postgresql oneinitdb
 service postgresql onestart
 echo "$POSTGRES_PASSWORD" | pw usermod postgres -h 0
 su - postgres -c "createdb immich -O postgres"
-echo "shared_preload_libraries = '/usr/local/lib/postgresql/vector.so'" >> /var/db/postgres/data16/postgresql.conf
+echo "shared_preload_libraries = 'vchord.so'" >> /var/db/postgres/data16/postgresql.conf
 service postgresql onestop
 
 # Install custom ffmpeg
 ffmpeg_staging_dir="$(mktemp -d -t jellyfin-ffmpeg)"
-git clone https://github.com/jellyfin/jellyfin-ffmpeg "$ffmpeg_staging_dir"
+git clone --branch "$FFMPEG_VERSION" https://github.com/jellyfin/jellyfin-ffmpeg "$ffmpeg_staging_dir"
 cd "$ffmpeg_staging_dir"
-git checkout "$FFMPEG_VERSION"
 ln -s debian/patches patches
 quilt push -a
 ./configure \
@@ -151,7 +164,6 @@ DB_HOSTNAME="localhost"
 DB_USERNAME="postgres"
 DB_DATABASE_NAME="immich"
 DB_PASSWORD="$POSTGRES_PASSWORD"
-DB_VECTOR_EXTENSION="pgvector"
 
 REDIS_HOSTNAME="localhost"
 EOF
