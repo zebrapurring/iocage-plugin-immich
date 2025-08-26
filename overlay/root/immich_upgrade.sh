@@ -9,14 +9,19 @@ fi
 
 IMMICH_REPO_DIR="/usr/local/src/immich"
 IMMICH_INSTALL_DIR="/usr/local/share/immich"
+IMMICH_REPO_URL="https://github.com/immich-app/immich"
 IMMICH_VERSION_TAG="$1"
 export PYTHON="python3.11"
 
 service immich_server stop || true
 killall node || true
 
-git -C "$IMMICH_REPO_DIR" fetch
-git -C "$IMMICH_REPO_DIR" checkout --force "$IMMICH_VERSION_TAG"
+if [ ! -d "$IMMICH_REPO_DIR" ]; then
+    git clone --branch "$IMMICH_VERSION_TAG" "$IMMICH_REPO_URL" "$IMMICH_REPO_DIR"
+else
+    git -C "$IMMICH_REPO_DIR" fetch
+    git -C "$IMMICH_REPO_DIR" checkout --force "$IMMICH_VERSION_TAG"
+fi
 
 rm -rf "$IMMICH_INSTALL_DIR"
 mkdir -p "$IMMICH_INSTALL_DIR"
@@ -56,3 +61,6 @@ chmod 444 "$IMMICH_INSTALL_DIR/web/geodata"/*
 echo "{}" > "$IMMICH_INSTALL_DIR/web/build-lock.json"
 
 service immich_server start
+
+# Clean up
+rm -rf "$IMMICH_REPO_DIR"
