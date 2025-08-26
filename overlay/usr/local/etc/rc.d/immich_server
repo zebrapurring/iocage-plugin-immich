@@ -12,7 +12,7 @@ name="immich_server"
 rcvar="${name}_enable"
 
 user="immich"
-immich_server_dir="${immich_server_dir:-"/usr/local/share/immich"}"
+immich_server_dir="${immich_server_dir:-"/usr/local/share/immich/server"}"
 immich_server_chdir="${immich_server_dir}"
 immich_server_env_file="/usr/local/etc/immich/immich_server.env"
 immich_server_env="NODE_ENV=production"

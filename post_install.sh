@@ -7,7 +7,7 @@ IMMICH_INSTALL_DIR="/usr/local/share/immich"
 IMMICH_SETTINGS_DIR="/usr/local/etc/immich"
 IMMICH_MEDIA_DIR="/var/db/immich-media"
 IMMICH_REPO_URL="https://github.com/immich-app/immich"
-IMMICH_VERSION_TAG="v1.135.1"
+IMMICH_VERSION_TAG="v1.139.4"
 POSTGRES_PASSWORD="$(dd if=/dev/urandom bs=1 count=100 status=none | md5 -q)"
 VECTORCHORD_VERSION="0.4.2"
 FFMPEG_VERSION="v7.1.1-6"    # Taken from https://github.com/immich-app/base-images/blob/main/server/packages/ffmpeg.json
@@ -98,42 +98,39 @@ fi
 rm -rf "$IMMICH_INSTALL_DIR"
 mkdir -p "$IMMICH_INSTALL_DIR"
 
+# Install Corepack
+export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+export CI=1
+npm install --global corepack@latest
+corepack enable pnpm
+
 # Build server backend
-cp -R "$IMMICH_REPO_DIR/server"/* "$IMMICH_INSTALL_DIR"
-cd "$IMMICH_INSTALL_DIR"
-npm install --save node-addon-api node-gyp
-npm ci --foreground-scripts
-npm install --cpu=wasm32 sharp
-npm run build
-npm link && npm install -g @immich/cli
+cd "$IMMICH_REPO_DIR"
+pnpm --filter immich --frozen-lockfile build
+pnpm --filter immich --frozen-lockfile --prod --no-optional deploy "$IMMICH_INSTALL_DIR/server"
 
 # Build web frontend
-mkdir -p "$IMMICH_INSTALL_DIR/staging/open-api"
-cp -R "$IMMICH_REPO_DIR/open-api/typescript-sdk" "$IMMICH_INSTALL_DIR/staging/open-api/"
-cp -R "$IMMICH_REPO_DIR/i18n" "$IMMICH_INSTALL_DIR/staging/"
-npm --prefix "$IMMICH_INSTALL_DIR/staging/open-api/typescript-sdk" ci
-npm --prefix "$IMMICH_INSTALL_DIR/staging/open-api/typescript-sdk" run build
-npm --prefix "$IMMICH_INSTALL_DIR/staging/open-api/typescript-sdk" prune --omit=dev --omit=optional
-cp -R "$IMMICH_REPO_DIR/web" "$IMMICH_INSTALL_DIR/staging/"
-npm --prefix "$IMMICH_INSTALL_DIR/staging/web" ci
-npm --prefix "$IMMICH_INSTALL_DIR/staging/web" install --cpu=wasm32 sharp
-npm --prefix "$IMMICH_INSTALL_DIR/staging/web" run build
-npm --prefix "$IMMICH_INSTALL_DIR/staging/web" prune --omit=dev --omit=optional
-mkdir "$IMMICH_INSTALL_DIR/build"
-mv "$IMMICH_INSTALL_DIR/staging/web/build" "$IMMICH_INSTALL_DIR/build/www"
+pnpm --filter @immich/sdk --filter immich-web --frozen-lockfile --force install
+pnpm --filter @immich/sdk --filter immich-web build
+cp -R ./web/build "$IMMICH_INSTALL_DIR/web"
+
+# Build CLI
+pnpm --filter @immich/sdk --filter @immich/cli --frozen-lockfile install
+pnpm --filter @immich/sdk --filter @immich/cli build
+pnpm --filter @immich/cli --prod --no-optional deploy "$IMMICH_INSTALL_DIR/cli"
 
 # Populate geodata
-mkdir "$IMMICH_INSTALL_DIR/build/geodata"
-curl -o "$IMMICH_INSTALL_DIR/build/geodata/cities500.zip" https://download.geonames.org/export/dump/cities500.zip
-unzip "$IMMICH_INSTALL_DIR/build/geodata/cities500.zip" -d "$IMMICH_INSTALL_DIR/build/geodata" && rm "$IMMICH_INSTALL_DIR/build/geodata/cities500.zip"
-curl -o "$IMMICH_INSTALL_DIR/build/geodata/admin1CodesASCII.txt" https://download.geonames.org/export/dump/admin1CodesASCII.txt
-curl -o "$IMMICH_INSTALL_DIR/build/geodata/admin2Codes.txt" https://download.geonames.org/export/dump/admin2Codes.txt
-curl -o "$IMMICH_INSTALL_DIR/build/geodata/ne_10m_admin_0_countries.geojson" https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/ne_10m_admin_0_countries.geojson
-date -u +"%Y-%m-%dT%H:%M:%S%z" | tr -d "\n" > "$IMMICH_INSTALL_DIR/build/geodata/geodata-date.txt"
-chmod 444 "$IMMICH_INSTALL_DIR/build/geodata"/*
+mkdir "$IMMICH_INSTALL_DIR/web/geodata"
+curl -o "$IMMICH_INSTALL_DIR/web/geodata/cities500.zip" https://download.geonames.org/export/dump/cities500.zip
+unzip "$IMMICH_INSTALL_DIR/web/geodata/cities500.zip" -d "$IMMICH_INSTALL_DIR/web/geodata" && rm "$IMMICH_INSTALL_DIR/web/geodata/cities500.zip"
+curl -o "$IMMICH_INSTALL_DIR/web/geodata/admin1CodesASCII.txt" https://download.geonames.org/export/dump/admin1CodesASCII.txt
+curl -o "$IMMICH_INSTALL_DIR/web/geodata/admin2Codes.txt" https://download.geonames.org/export/dump/admin2Codes.txt
+curl -o "$IMMICH_INSTALL_DIR/web/geodata/ne_10m_admin_0_countries.geojson" https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/ne_10m_admin_0_countries.geojson
+date -u +"%Y-%m-%dT%H:%M:%S%z" | tr -d "\n" > "$IMMICH_INSTALL_DIR/web/geodata/geodata-date.txt"
+chmod 444 "$IMMICH_INSTALL_DIR/web/geodata"/*
 
 # Generate empty build lockfile
-echo "{}" > "$IMMICH_INSTALL_DIR/build/build-lock.json"
+echo "{}" > "$IMMICH_INSTALL_DIR/web/build-lock.json"
 
 # Create the media directory
 mkdir -p "$IMMICH_MEDIA_DIR"
@@ -158,7 +155,7 @@ IMMICH_PORT="2283"
 NO_COLOR=true
 IMMICH_ENV="production"
 IMMICH_MEDIA_LOCATION="$IMMICH_MEDIA_DIR"
-IMMICH_BUILD_DATA="$IMMICH_INSTALL_DIR/build"
+IMMICH_BUILD_DATA="$IMMICH_INSTALL_DIR/web"
 
 DB_HOSTNAME="localhost"
 DB_USERNAME="postgres"
