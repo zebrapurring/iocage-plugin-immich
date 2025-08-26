@@ -170,7 +170,8 @@ pnpm --filter immich --frozen-lockfile --prod --no-optional deploy "$IMMICH_INST
 # Build web frontend
 pnpm --filter @immich/sdk --filter immich-web --frozen-lockfile --force install
 pnpm --filter @immich/sdk --filter immich-web build
-cp -R ./web/build "$IMMICH_INSTALL_DIR/web"
+mkdir -p "$IMMICH_INSTALL_DIR/build"
+cp -R ./web/build "$IMMICH_INSTALL_DIR/build/www"
 
 # Build CLI
 pnpm --filter @immich/sdk --filter @immich/cli --frozen-lockfile install
@@ -178,17 +179,17 @@ pnpm --filter @immich/sdk --filter @immich/cli build
 pnpm --filter @immich/cli --prod --no-optional deploy "$IMMICH_INSTALL_DIR/cli"
 
 # Populate geodata
-mkdir "$IMMICH_INSTALL_DIR/web/geodata"
-curl -o "$IMMICH_INSTALL_DIR/web/geodata/cities500.zip" https://download.geonames.org/export/dump/cities500.zip
-unzip "$IMMICH_INSTALL_DIR/web/geodata/cities500.zip" -d "$IMMICH_INSTALL_DIR/web/geodata" && rm "$IMMICH_INSTALL_DIR/web/geodata/cities500.zip"
-curl -o "$IMMICH_INSTALL_DIR/web/geodata/admin1CodesASCII.txt" https://download.geonames.org/export/dump/admin1CodesASCII.txt
-curl -o "$IMMICH_INSTALL_DIR/web/geodata/admin2Codes.txt" https://download.geonames.org/export/dump/admin2Codes.txt
-curl -o "$IMMICH_INSTALL_DIR/web/geodata/ne_10m_admin_0_countries.geojson" https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/ne_10m_admin_0_countries.geojson
-date -u +"%Y-%m-%dT%H:%M:%S%z" | tr -d "\n" > "$IMMICH_INSTALL_DIR/web/geodata/geodata-date.txt"
-chmod 444 "$IMMICH_INSTALL_DIR/web/geodata"/*
+mkdir "$IMMICH_INSTALL_DIR/build/geodata"
+curl -o "$IMMICH_INSTALL_DIR/build/geodata/cities500.zip" https://download.geonames.org/export/dump/cities500.zip
+unzip "$IMMICH_INSTALL_DIR/build/geodata/cities500.zip" -d "$IMMICH_INSTALL_DIR/build/geodata" && rm "$IMMICH_INSTALL_DIR/build/geodata/cities500.zip"
+curl -o "$IMMICH_INSTALL_DIR/build/geodata/admin1CodesASCII.txt" https://download.geonames.org/export/dump/admin1CodesASCII.txt
+curl -o "$IMMICH_INSTALL_DIR/build/geodata/admin2Codes.txt" https://download.geonames.org/export/dump/admin2Codes.txt
+curl -o "$IMMICH_INSTALL_DIR/build/geodata/ne_10m_admin_0_countries.geojson" https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/ne_10m_admin_0_countries.geojson
+date -u +"%Y-%m-%dT%H:%M:%S%z" | tr -d "\n" > "$IMMICH_INSTALL_DIR/build/geodata/geodata-date.txt"
+chmod 444 "$IMMICH_INSTALL_DIR/build/geodata"/*
 
 # Generate empty build lockfile
-echo "{}" > "$IMMICH_INSTALL_DIR/web/build-lock.json"
+echo "{}" > "$IMMICH_INSTALL_DIR/build/build-lock.json"
 
 # Create the media directory
 mkdir -p "$IMMICH_MEDIA_DIR"
@@ -213,7 +214,7 @@ IMMICH_PORT="2283"
 NO_COLOR=true
 IMMICH_ENV="production"
 IMMICH_MEDIA_LOCATION="$IMMICH_MEDIA_DIR"
-IMMICH_BUILD_DATA="$IMMICH_INSTALL_DIR/web"
+IMMICH_BUILD_DATA="$IMMICH_INSTALL_DIR/build"
 
 DB_HOSTNAME="localhost"
 DB_USERNAME="postgres"
