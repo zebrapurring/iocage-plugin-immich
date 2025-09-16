@@ -28,7 +28,8 @@
     "quilt",
     "redis",
     "rustup-init",
-    "vips"
+    "vips",
+    "yq"
   ],
   "packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
   "fingerprints": {
