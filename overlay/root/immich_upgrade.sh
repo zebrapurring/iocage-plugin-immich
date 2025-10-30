@@ -43,6 +43,7 @@ yq -y -i '
       | .packageExtensions.bcrypt.dependencies["node-gyp"] = "*"
    ' pnpm-workspace.yaml
 pnpm install --no-frozen-lockfile
+pnpm --filter immich install @img/sharp-wasm32
 pnpm --filter immich --frozen-lockfile build
 pnpm --filter immich --frozen-lockfile --prod --no-optional deploy "$IMMICH_INSTALL_DIR/server"
 

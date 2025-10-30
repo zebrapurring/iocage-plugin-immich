@@ -7,7 +7,7 @@ IMMICH_INSTALL_DIR="/usr/local/share/immich"
 IMMICH_SETTINGS_DIR="/usr/local/etc/immich"
 IMMICH_MEDIA_DIR="/var/db/immich-media"
 IMMICH_REPO_URL="https://github.com/immich-app/immich"
-IMMICH_VERSION_TAG="v1.142.1"
+IMMICH_VERSION_TAG="v2.2.0"
 POSTGRES_PASSWORD="$(dd if=/dev/urandom bs=1 count=100 status=none | md5 -q)"
 VECTORCHORD_VERSION="0.4.2"
 FFMPEG_VERSION="v7.1.1-6"    # Taken from https://github.com/immich-app/base-images/blob/main/server/packages/ffmpeg.json
