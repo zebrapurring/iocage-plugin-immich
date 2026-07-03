@@ -7,10 +7,10 @@ IMMICH_INSTALL_DIR="/usr/local/share/immich"
 IMMICH_SETTINGS_DIR="/usr/local/etc/immich"
 IMMICH_MEDIA_DIR="/var/db/immich-media"
 IMMICH_REPO_URL="https://github.com/immich-app/immich"
-IMMICH_VERSION_TAG="v2.2.0"
+IMMICH_VERSION_TAG="v3.0.1"
 POSTGRES_PASSWORD="$(dd if=/dev/urandom bs=1 count=100 status=none | md5 -q)"
 VECTORCHORD_VERSION="0.4.2"
-FFMPEG_VERSION="v7.1.1-6"    # Taken from https://github.com/immich-app/base-images/blob/main/server/packages/ffmpeg.json
+FFMPEG_VERSION="v7.1.4-3"    # Taken from https://github.com/immich-app/base-images/blob/main/server/packages/ffmpeg.json
 export PYTHON="python3.11"
 
 # Install VectorChord
@@ -104,44 +104,6 @@ export CI=1
 npm install --global corepack@latest
 corepack enable pnpm
 
-# Build server backend
-cd "$IMMICH_REPO_DIR"
-# WA: Fix bcrypt error: `No native build was found for platform=freebsd arch=x64 runtime=node abi=127 uv=1 libc=glibc node=22.14.0`
-yq -y -i '
-      .ignoredBuiltDependencies |= map(select(. != "bcrypt"))
-      | .onlyBuiltDependencies += ["bcrypt"]
-      | .onlyBuiltDependencies |= (unique)
-      | .packageExtensions.bcrypt.dependencies["node-addon-api"] = "*"
-      | .packageExtensions.bcrypt.dependencies["node-gyp"] = "*"
-   ' pnpm-workspace.yaml
-pnpm install --no-frozen-lockfile
-pnpm --filter immich --frozen-lockfile build
-pnpm --filter immich --frozen-lockfile --prod --no-optional deploy "$IMMICH_INSTALL_DIR/server"
-
-# Build web frontend
-pnpm --filter @immich/sdk --filter immich-web --frozen-lockfile --force install
-pnpm --filter @immich/sdk --filter immich-web build
-mkdir -p "$IMMICH_INSTALL_DIR/build"
-cp -R ./web/build "$IMMICH_INSTALL_DIR/build/www"
-
-# Build CLI
-pnpm --filter @immich/sdk --filter @immich/cli --frozen-lockfile install
-pnpm --filter @immich/sdk --filter @immich/cli build
-pnpm --filter @immich/cli --prod --no-optional deploy "$IMMICH_INSTALL_DIR/cli"
-
-# Populate geodata
-mkdir "$IMMICH_INSTALL_DIR/build/geodata"
-curl -o "$IMMICH_INSTALL_DIR/build/geodata/cities500.zip" https://download.geonames.org/export/dump/cities500.zip
-unzip "$IMMICH_INSTALL_DIR/build/geodata/cities500.zip" -d "$IMMICH_INSTALL_DIR/build/geodata" && rm "$IMMICH_INSTALL_DIR/build/geodata/cities500.zip"
-curl -o "$IMMICH_INSTALL_DIR/build/geodata/admin1CodesASCII.txt" https://download.geonames.org/export/dump/admin1CodesASCII.txt
-curl -o "$IMMICH_INSTALL_DIR/build/geodata/admin2Codes.txt" https://download.geonames.org/export/dump/admin2Codes.txt
-curl -o "$IMMICH_INSTALL_DIR/build/geodata/ne_10m_admin_0_countries.geojson" https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/ne_10m_admin_0_countries.geojson
-date -u +"%Y-%m-%dT%H:%M:%S%z" | tr -d "\n" > "$IMMICH_INSTALL_DIR/build/geodata/geodata-date.txt"
-chmod 444 "$IMMICH_INSTALL_DIR/build/geodata"/*
-
-# Generate empty build lockfile
-echo "{}" > "$IMMICH_INSTALL_DIR/build/build-lock.json"
-
 # Create the media directory
 mkdir -p "$IMMICH_MEDIA_DIR"
 chown immich:immich "$IMMICH_MEDIA_DIR"
@@ -175,6 +137,9 @@ DB_PASSWORD="$POSTGRES_PASSWORD"
 REDIS_HOSTNAME="localhost"
 EOF
 
+# Install Immich
+/root/immich_upgrade.sh "$IMMICH_VERSION_TAG"
+
 # Enable system services
 sysrc postgresql_enable="YES"
 sysrc redis_enable="YES"
@@ -187,7 +152,4 @@ service redis start
 service immich_server start
 
 # Clean up
-npm cache clean --force
 pkg clean --all --yes
-rm -r "$IMMICH_REPO_DIR"
-rm -rf "$IMMICH_INSTALL_DIR/staging"

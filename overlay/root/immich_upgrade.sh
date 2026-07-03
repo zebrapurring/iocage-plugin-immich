@@ -34,27 +34,19 @@ corepack enable pnpm
 
 # Build server backend
 cd "$IMMICH_REPO_DIR"
-# WA: Fix bcrypt error: `No native build was found for platform=freebsd arch=x64 runtime=node abi=127 uv=1 libc=glibc node=22.14.0`
-yq -y -i '
-      .ignoredBuiltDependencies |= map(select(. != "bcrypt"))
-      | .onlyBuiltDependencies += ["bcrypt"]
-      | .onlyBuiltDependencies |= (unique)
-      | .packageExtensions.bcrypt.dependencies["node-addon-api"] = "*"
-      | .packageExtensions.bcrypt.dependencies["node-gyp"] = "*"
-   ' pnpm-workspace.yaml
-pnpm install --no-frozen-lockfile
-pnpm --filter immich install @img/sharp-wasm32
-pnpm --filter immich --frozen-lockfile build
-pnpm --filter immich --frozen-lockfile --prod --no-optional deploy "$IMMICH_INSTALL_DIR/server"
+#pnpm install --no-frozen-lockfile
+pnpm install --frozen-lockfile
+pnpm --filter @immich/plugin-sdk --filter immich build
+pnpm --filter immich --prod --no-optional deploy "$IMMICH_INSTALL_DIR/server"
 
 # Build web frontend
-pnpm --filter @immich/sdk --filter immich-web --frozen-lockfile --force install
+pnpm --filter @immich/sdk --filter immich-web --force install --frozen-lockfile
 pnpm --filter @immich/sdk --filter immich-web build
 mkdir -p "$IMMICH_INSTALL_DIR/build"
 cp -R ./web/build "$IMMICH_INSTALL_DIR/build/www"
 
 # Build CLI
-pnpm --filter @immich/sdk --filter @immich/cli --frozen-lockfile install
+pnpm --filter @immich/sdk --filter @immich/cli install --frozen-lockfile
 pnpm --filter @immich/sdk --filter @immich/cli build
 pnpm --filter @immich/cli --prod --no-optional deploy "$IMMICH_INSTALL_DIR/cli"
 
@@ -71,7 +63,12 @@ chmod 444 "$IMMICH_INSTALL_DIR/build/geodata"/*
 # Generate empty build lockfile
 echo "{}" > "$IMMICH_INSTALL_DIR/build/build-lock.json"
 
+# Generate empty plugins manifest
+mkdir -p "$IMMICH_INSTALL_DIR/build/corePlugin"
+echo 'H4sIAI2pU2kAA71WsW7bMBDd/RWEpgRw0qBjNyNNCgNNWyBGOxQZaPFksaFIlaQcG0H+vUdSpmRJtSMEzmLIunfkvbvHRz1PCEkkLSD5RBJeFDzNL1KlIZm6wBq04Uq62MfLq8ur8NZyKzx+7vHkOuIZmFTz0tY5LkCelH7MhHoiKS3pkgtuORiSKU1Cesiklc2Vbi26AFpgyMWeqCkw8ozP+K+kNnc4xo39UIpqxeWlR2D4JSRkXFisHFG/fU7IxEABuAv7VtMNsFsuwL+Z7lCR360HkOWWIBTkHqhDtYZSY8CadgbBejEiSWW4XBELG0sKatPc/cMmaFhVgmoCm1KDcd02zSamKkulLbBrJV2mp5T4TZKHBpXmUNDYocBhW3oKavkHUhtXdP3TqgTthrCXETrrKu28bi1mrMaqW4sNdWLhGAZisInsrQqsCV1RLo1tOtpa7KW9cuLxi7D1qIJAVoVvVIpdc7slU5L4ctwDbGja6l4kkdFKWLdok3WYJ9ZAVBYZxqEiVWwwCrz4P7eUGrgHafAwrA/wWyolgMp+JbtiMyoMHK7zV46iR2nG+kyuKsHIEoir4sLEMtrVxudW3djDvxXXwHxzd2p5mLRTavjRE+fneuzEEbuHes2R66S87wHKamLdQGs5qjXddufJLRT9nGM6byt9fjf7cuPU/XP++eZ7nElvhEN9nAl0Z2BN+8xIJTS0x2vhB/q0kgeVUHYgwzJAIAOLo0Im3YxhFdSoE/ioX3jOTiWDMcP9irekdylfU7ThI647k9s3mJLV1RFPugtXgdwSf0WeuYzzcGl4XREqhA8ZcuYt7nysOcURdCSJvw/hIwFvAX/ZHvlICLCZRu9cDzlWL9KlqtZ4qnIIPuUGQLsZY03qNacrlH1L10qjrIbOVy/Um5F+bBVO8ZutTnGDqmTWW+CdzXa3/ymFeo/MI+1Gpg37I/oc4Ye10BhbqJlYVsWQ1hhzAuqEu3buQDg25yZebsSUkPKMozHS/cxDA5uS0xmkL2PO3vqhSfXKCdMtRuafRzrEroYBf5i8TCb/ADCpEVYYDQAA' | base64 -d | gunzip > "$IMMICH_INSTALL_DIR/build/corePlugin/manifest.json"
+
 service immich_server start
 
 # Clean up
+pnpm cache delete
 rm -rf "$IMMICH_REPO_DIR"
